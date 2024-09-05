@@ -22,6 +22,9 @@ namespace Task
     {
         bool accountType;
 
+        /// <summary>
+        /// Событие создания нового аккаунта
+        /// </summary>
         public static Action<bool, long> NewAccount;
 
         public NewAccountPage(bool accountType)
@@ -30,6 +33,11 @@ namespace Task
             this.accountType = accountType;
         }
 
+        /// <summary>
+        /// Обработка нажатия кнопки создания нового аккаунта
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CreateNewAccount(object sender, RoutedEventArgs e)
         {
             long balance = long.Parse(AccountBalance.Text);

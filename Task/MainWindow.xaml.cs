@@ -32,9 +32,20 @@ namespace Task
         Account deposit;
         Account notDeposit;
 
-        public static event Action<string,string,string,int,int> TransferAction;
-        public static event Action<string, string, int> AccountAction;
-        public static event Action<string, string, int> DeleteAccountAction;
+        /// <summary>
+        /// Событие перевода средств
+        /// </summary>
+        public event Action<string,string,string,int,int> TransferAction;
+
+        /// <summary>
+        /// Событие создания аккаунта
+        /// </summary>
+        public event Action<string, string, int> AccountAction;
+
+        /// <summary>
+        /// Событие удаления аккаунта
+        /// </summary>
+        public event Action<string, string, int> DeleteAccountAction;
 
         public MainWindow()
         {
@@ -45,9 +56,8 @@ namespace Task
             mainPage = new MainPage(this);
             newCustomerPage = new NewCustomerPage(this);
             customerPage = new CustomerPage(this);
+            actionNotifications = new ActionNotifications(this);
             OpenMainPage();
-
-            actionNotifications = new ActionNotifications();
 
             mainPage.CustomersView.ItemsSource = bank.Customers;
 
@@ -58,6 +68,10 @@ namespace Task
         }
 
         #region Выбор клиента и заполнение страниц
+
+        /// <summary>
+        /// Обработка выбора клиента
+        /// </summary>
         public void Select()
         {
             customer = mainPage.CustomersView.SelectedItem as Customer;
@@ -65,11 +79,15 @@ namespace Task
             notDeposit = bank.FindAccountByID(customer.ID, false);
             FillCustomerPage();
         }
+
+        /// <summary>
+        /// Заполнение страницы клиента
+        /// </summary>
         private void FillCustomerPage()
         {
             customerPage.CustomerName.Text = customer.Name;
 
-            if (deposit != null)
+            try
             {
                 customerPage.DepositAccountFrame.Content = customerPage.depositAccountPage;
 
@@ -77,16 +95,17 @@ namespace Task
 
                 customerPage.depositAccountPage.AccountNumber.Text = deposit.Number.ToString();
                 customerPage.depositAccountPage.AccountBalance.Text = deposit.Balance.ToString();
-                customerPage.depositAccountPage.NextMonth.Text = bank.MonthlyInterest(deposit.Type,deposit.Balance).ToString();
-                customerPage.depositAccountPage.NextYear.Text = bank.YearIntetest(deposit.Type,deposit.Balance).ToString();
+                customerPage.depositAccountPage.NextMonth.Text = deposit.Balance.MonthlyInterest(deposit.Type).ToString();
+                customerPage.depositAccountPage.NextYear.Text = deposit.Balance.AnnualInterest(deposit.Type).ToString();
+
                 customerPage.depositTransferPage.Balance.Text = deposit.Balance.ToString();
             }
-            else
+            catch(NullReferenceException)
             {
                 customerPage.DepositAccountFrame.Content = customerPage.newDepositAccountPage;
             }
 
-            if (notDeposit != null)
+            try
             {
                 customerPage.NotDepositAccountFrame.Content = customerPage.notDepositAccountPage;
 
@@ -94,12 +113,12 @@ namespace Task
 
                 customerPage.notDepositAccountPage.AccountNumber.Text = notDeposit.Number.ToString();
                 customerPage.notDepositAccountPage.AccountBalance.Text = notDeposit.Balance.ToString();
-                customerPage.notDepositAccountPage.NextMonth.Text = bank.MonthlyInterest(notDeposit.Type, notDeposit.Balance).ToString();
-                customerPage.notDepositAccountPage.NextYear.Text = bank.YearIntetest(notDeposit.Type, notDeposit.Balance).ToString();
+                customerPage.notDepositAccountPage.NextMonth.Text = notDeposit.Balance.MonthlyInterest(notDeposit.Type).ToString();
+                customerPage.notDepositAccountPage.NextYear.Text = notDeposit.Balance.AnnualInterest(notDeposit.Type).ToString();
                 customerPage.notDepositTransferPage.Balance.Text = notDeposit.Balance.ToString();
 
             }
-            else
+            catch
             {
                 customerPage.NotDepositAccountFrame.Content = customerPage.newNotDepositAccountPage;
             }
@@ -108,13 +127,11 @@ namespace Task
         #endregion
 
         #region Управление аккаунтами и учетными записями
-        private void NewAccount(bool type, long balance)
-        {
-            Account newAccount = new Account(customer.ID, bank.CreateAccountNumber(), balance, type);
-            bank.AddNewAccount(newAccount);
-            Select();
-            AccountAction?.Invoke(newAccount.Number.ToString(), newAccount.Balance.ToString(), newAccount.ID);
-        }
+
+        /// <summary>
+        /// Удаление аккаунта
+        /// </summary>
+        /// <param name="number">Номер аккаунта</param>
         private void DeleteAccount(int number)
         {
             Account deleteAccount = bank.FindAccountByNumber(number);
@@ -122,13 +139,41 @@ namespace Task
             Select();
             DeleteAccountAction?.Invoke(deleteAccount.Number.ToString(), deleteAccount.Balance.ToString(), deleteAccount.ID);
         }
+
+        /// <summary>
+        /// Добавление нового клиента
+        /// </summary>
+        /// <param name="firstName">Имя</param>
+        /// <param name="lastName">Фамилия</param>
+        /// <param name="middleName">Отчество</param>
+        /// <param name="balance">Баланс счёта</param>
+        /// <param name="accountType">Тип счёта</param>
         private void NewCustomer(string firstName, string lastName, string middleName, long balance, bool accountType)
         {
-            Customer newCustomer = new Customer(bank.CreateNewID(), firstName, lastName, middleName);
+            Customer newCustomer = new Customer(bank.Customers.Count, firstName, lastName, middleName);
             Account newAccount = new Account(newCustomer.ID, bank.CreateAccountNumber(), balance, accountType);
             bank.AddNewCustomer(newCustomer, newAccount);
         }
 
+        /// <summary>
+        /// Добавление нового аккаунта
+        /// </summary>
+        /// <param name="type">Тип аккаунта</param>
+        /// <param name="balance">Баланс</param>
+        private void NewAccount(bool type, long balance)
+        {
+            Account newAccount = new Account(customer.ID, bank.CreateAccountNumber(), balance, type);
+            bank.AddNewAccount(newAccount);
+            Select();
+            AccountAction?.Invoke(newAccount.Number.ToString(), newAccount.Balance.ToString(), newAccount.ID);
+        }
+
+        /// <summary>
+        /// Проверка и открытие перевода средств
+        /// </summary>
+        /// <param name="sender"> Номер отправителя </param>
+        /// <param name="recipient"> Номер получателя </param>
+        /// <param name="sum"> Сумма </param>
         private void CheckTransfer(int sender, int recipient, long sum)
         {
             Account senderAccount = bank.FindAccountByNumber(sender);
@@ -154,10 +199,10 @@ namespace Task
 
             TransferAction?.Invoke(senderAccount.Number.ToString(),recipientAccount.Number.ToString(),sum.ToString(), senderAccount.ID, recipientAccount.ID);
         }
-
         #endregion
 
         #region Переход между страницами
+
         /// <summary>
         /// Открыть главную страницу
         /// </summary>

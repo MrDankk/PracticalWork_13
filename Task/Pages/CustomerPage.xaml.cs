@@ -33,7 +33,10 @@ namespace Task
 
         public int customerID;
 
-        public static event Action<int> ActionLog;
+        /// <summary>
+        /// Событие получения списка действий клиента
+        /// </summary>
+        public event Action<int> ActionLog;
 
         public CustomerPage(MainWindow mainWindow)
         { 
@@ -54,6 +57,11 @@ namespace Task
             notDepositTransferPage = new TransferPage();
         }
 
+        /// <summary>
+        /// Открытие страницы переводов
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="number"></param>
         public void OpenTransferPage(bool type, int number)
         {
             if (type)
@@ -68,6 +76,10 @@ namespace Task
             }
         }
 
+        /// <summary>
+        /// Открытие страницы аккаунта
+        /// </summary>
+        /// <param name="type"></param>
         public void OpenAccountPage(bool type)
         {
             if (type)
@@ -80,18 +92,31 @@ namespace Task
             }
         }
 
+        /// <summary>
+        /// Возвращение на главную страницу
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BackToMainMenuPage(object sender, RoutedEventArgs e)
         {
             mainWindow.OpenMainPage();
             ClearInputs();
         }
 
+        /// <summary>
+        /// Отчиска ввода
+        /// </summary>
         private void ClearInputs()
         {
             newDepositAccountPage.AccountBalance.Text = "";
             newNotDepositAccountPage.AccountBalance.Text = "";
         }
 
+        /// <summary>
+        /// Обработка кнопки списка действий
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void GetActionLog(object sender, RoutedEventArgs e)
         {
             ActionLog?.Invoke(customerID);

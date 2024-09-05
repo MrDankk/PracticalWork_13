@@ -31,5 +31,15 @@ namespace Task
             this.MiddleName = customer.MiddleName;
             this.Name = customer.Name;
         }
+
+        /// <summary>
+        /// Преобразование в массив
+        /// </summary>
+        /// <param name="customer"></param>
+        /// <returns></returns>
+        public string[] CustomerArray()
+        {
+            return new string[] { ID.ToString(), LastName , FirstName, MiddleName};
+        }
     }
 }

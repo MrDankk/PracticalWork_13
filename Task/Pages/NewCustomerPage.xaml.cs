@@ -21,6 +21,10 @@ namespace Task
     public partial class NewCustomerPage : Page
     {
         MainWindow mainWindow;
+
+        /// <summary>
+        /// Событие создания нового клиента
+        /// </summary>
         public static event Action<string, string, string, long, bool> NewCustomer;
 
         bool accountType;
@@ -61,6 +65,11 @@ namespace Task
             accountType = false;
         }
 
+        /// <summary>
+        /// Обработка нажатия кнопки создания нового клиента
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CreateNewCustomer(object sender, RoutedEventArgs e)
         {
             long balance = long.Parse(Deposit.Text);

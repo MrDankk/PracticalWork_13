@@ -34,5 +34,42 @@ namespace Task
             this.balance = account.balance;
             this.type = account.type;
         }
+
+        /// <summary>
+        /// Преобразование в массив
+        /// </summary>
+        /// <param name="account"></param>
+        /// <returns></returns>
+        public string[] AccountArray()
+        {
+            return new string[] { ID.ToString(), 
+                                  Number.ToString(), 
+                                  Balance.ToString(), 
+                                  Type.BoolToString() };
+        }
+
+        /// <summary>
+        /// Добавление баланса
+        /// </summary>
+        /// <param name="account"></param>
+        /// <param name="sum"></param>
+        /// <returns></returns>
+        public static Account operator + (Account account, long sum)
+        {
+            account.Balance = account.Balance + sum;
+            return account;
+        }
+
+        /// <summary>
+        /// Вычитание баланса
+        /// </summary>
+        /// <param name="account"></param>
+        /// <param name="sum"></param>
+        /// <returns></returns>
+        public static Account operator - (Account account, long sum)
+        {
+            account.Balance = account.Balance - sum;
+            return account;
+        }
     }
 }

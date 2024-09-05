@@ -8,19 +8,31 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shapes;
+using RepositoryLibrary;
 
 namespace Task
 {
-    internal class ActionNotifications : Repository
+    internal class ActionNotifications
     {
-        public ActionNotifications() 
+        MainWindow mainWindow;
+        public ActionNotifications(MainWindow mainWindow) 
         {
-            MainWindow.TransferAction += TransferNotification;
-            MainWindow.AccountAction += NewAccountNotification;
-            MainWindow.DeleteAccountAction += DeleteAccountNotification;
-            CustomerPage.ActionLog += GetActionLog;
+            this.mainWindow = mainWindow;
+
+            mainWindow.TransferAction += TransferNotification;
+            mainWindow.AccountAction += NewAccountNotification;
+            mainWindow.DeleteAccountAction += DeleteAccountNotification;
+            mainWindow.customerPage.ActionLog += GetActionLog;
         }
 
+        /// <summary>
+        /// Уведомление о переводе денег между аккаунтами
+        /// </summary>
+        /// <param name="senderNumber"> Номер отправителя </param>
+        /// <param name="recipientNumber"> Номер получателя </param>
+        /// <param name="sum"> Сумма </param>
+        /// <param name="senderID"> Индекс отпраителя </param>
+        /// <param name="recipientID"> Индекс получателя </param>
         private void TransferNotification(string senderNumber,string recipientNumber, string sum, int senderID, int recipientID)
         {
             string text = $"Совершен перевод {sum}руб. \n с вашего счёта: {senderNumber} \n на счёт {recipientNumber}";
@@ -31,38 +43,54 @@ namespace Task
             string senderPath = $"Customers\\{senderID.ToString()}\\Action.txt";
             string recipientPath = $"Customers\\{recipientID.ToString()}\\Action.txt";
 
-            base.FileWriting(senderPath, senderRecording);
-            base.FileWriting(recipientPath, recipientRecording);
+            Writing.FileWriting(senderPath, senderRecording);
+            Writing.FileWriting(recipientPath, recipientRecording);
 
             MessageBox.Show(text);
         }
 
+        /// <summary>
+        /// Уведомление о новом аккаунте
+        /// </summary>
+        /// <param name="number"> Номер аккаунта </param>
+        /// <param name="sum"> Баланс </param>
+        /// <param name="id"> Индекс </param>
         private void NewAccountNotification(string number, string sum, int id)
         {
             string text = $"Открыт новый счёт {number} с балансом {sum}";
             string recording = $"{DateTime.Now} - Открыт новый счёт {number} с балансом {sum}";
             string path = $"Customers\\{id.ToString()}\\Action.txt";
 
-            base.FileWriting(path, recording);
+            Writing.FileWriting(path, recording);
 
             MessageBox.Show(text);
         }
 
+        /// <summary>
+        /// Уведомление о удалении аккаунта
+        /// </summary>
+        /// <param name="number"> Номер </param>
+        /// <param name="balance"> Баланс </param>
+        /// <param name="id"> Индекс </param>
         private void DeleteAccountNotification(string number, string balance, int id)
         {
             string text = $"Закрыт счёт {number} с балансом {balance}";
             string recording = $"{DateTime.Now} - Закрыт счёт {number} с балансом {balance}";
             string path = $"Customers\\{id.ToString()}\\Action.txt";
 
-            base.FileWriting(path, recording);
+            Writing.FileWriting(path, recording);
 
             MessageBox.Show(text);
         }
 
+        /// <summary>
+        /// Получение журнала уведомлений
+        /// </summary>
+        /// <param name="id"> Индекс клиента </param>
         private void GetActionLog(int id)
         {
             string path = $"Customers\\{id.ToString()}\\Action.txt";
-            List<string> list = base.FileReader(path);
+            List<string> list = Reader.GetList(path);
             string actionLog = String.Join("\n",list);
             if (actionLog != null && actionLog != "")
             {

@@ -6,14 +6,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Shapes;
+using RepositoryLibrary;
 
 namespace Task
 {
-    internal class Bank : Repository
+    internal class Bank
     {
-        public ObservableCollection<Customer> Customers;
-        public List<Account> Accounts;
-        private List<int> customersFolderName;
+        public ObservableCollection <Customer> Customers;
+        public ObservableCollection <Account> Accounts;
+        private List<string[]> customersFolderName;
 
         Random rand;
 
@@ -21,53 +22,23 @@ namespace Task
         { 
             rand = new Random();
 
-            customersFolderName = base.GetFoldersNames();
+            customersFolderName = Reader.GetFoldersNames("Customers\\");
 
             Customers = new ObservableCollection<Customer>();
-            Accounts  = new List<Account>();
+            Accounts  = new ObservableCollection<Account>();
 
             FillCustomerList();
             FillAccountList();
         }
 
-        /// <summary>
-        /// Заполнение списка клиентов
-        /// </summary>
-        private void FillCustomerList()
-        {
-            for (int i = 0; i < customersFolderName.Count; i++)
-            {
-                List<string> customerFile = base.FileReader(base.GetFilePath(customersFolderName[i], 0));
-                string[] customerInformation = Separation(customerFile[0]);
-                Customer customer = new Customer(int.Parse(customerInformation[0]), customerInformation[1], customerInformation[2], customerInformation[3]);
-                Customers.Add(customer);
-            }
-        }
-
-        /// <summary>
-        /// Заполнение списка счетов
-        /// </summary>
-        private void FillAccountList()
-        {
-            for(int i = 0; i < customersFolderName.Count;i++)
-            {
-                List<string> DepositFile = base.FileReader(base.GetFilePath(customersFolderName[i], 1));
-                if (DepositFile.Count > 0)
-                {
-                    string[] accountInformation = Separation(DepositFile[0]);
-                    Accounts.Add(new Account(IntParse(accountInformation[0]), IntParse(accountInformation[1]), LongParse(accountInformation[2]), AccountType(accountInformation[3])));
-                }
-
-                List<string> NotdepositFile = base.FileReader(base.GetFilePath(customersFolderName[i], 2));
-                if (NotdepositFile.Count > 0)
-                {
-                    string[] accountInformation = Separation(NotdepositFile[0]);
-                    Accounts.Add(new Account(IntParse(accountInformation[0]), IntParse(accountInformation[1]), LongParse(accountInformation[2]), AccountType(accountInformation[3])));
-                }
-            }
-        }
-
         #region Управление учётными записями и аккаунтами
+
+        /// <summary>
+        /// Проверка баланса
+        /// </summary>
+        /// <param name="number"></param>
+        /// <param name="sum"></param>
+        /// <returns></returns>
         public bool CheckBalance(int number, long sum)
         {
             Account account = FindAccountByNumber(number);
@@ -76,58 +47,75 @@ namespace Task
             return true;
         }
 
+        /// <summary>
+        /// Перевод между счетами
+        /// </summary>
+        /// <param name="sender"> Отправитель </param>
+        /// <param name="recipient"> Получатель </param>
+        /// <param name="sum"> Сумма </param>
         public void OpenTranfer(Account sender, Account recipient, long sum)
         {
-            long newSenderBalance = sender.Balance -= sum;
-            long newRecipientBalance = recipient.Balance += sum;
+            sender -= sum;
+            recipient += sum;
 
-            sender.Balance = newSenderBalance;
-            recipient.Balance = newRecipientBalance;
+            string senderRecording = Connect(sender);
+            string recipientRecording = Connect(recipient);
 
-            string senderRecording = Join(sender);
-            string recipientRecording = Join(recipient);
+            string senderPath = sender.Type.AccountPath(sender.ID, customersFolderName);
+            string recipientPath = recipient.Type.AccountPath(recipient.ID, customersFolderName);
 
-            base.DeleteFile(base.GetFilePath(sender.ID, AccountFile(sender.Type)));
-            base.FileWriting(base.GetFilePath(sender.ID, AccountFile(sender.Type)), senderRecording);
+            Delete.File(senderPath);
+            Writing.FileWriting(senderPath, senderRecording);
 
-            base.DeleteFile(base.GetFilePath(recipient.ID, AccountFile(sender.Type)));
-            base.FileWriting(base.GetFilePath(recipient.ID, AccountFile(sender.Type)), recipientRecording);
+            Delete.File(recipientPath);
+            Writing.FileWriting(recipientPath, recipientRecording);
         }
 
-        public void AddNewAccount(Account account)
-        {
-            Accounts.Add(account);
-
-            if(account.Type)
-            {
-                base.FileWriting(base.GetFilePath(account.ID, 1), Join(account));
-            }
-            else
-            {
-                base.FileWriting(base.GetFilePath(account.ID, 2), Join(account));
-            }
-        }
-
-        public void DeleteAccount(Account account)
-        {
-            Accounts.Remove(account);
-            base.DeleteFile(base.GetFilePath(account.ID, AccountFile(account.Type)));
-        }
-
+        /// <summary>
+        /// Добавление нового клиента
+        /// </summary>
+        /// <param name="customer"></param>
+        /// <param name="account"></param>
         public void AddNewCustomer(Customer customer, Account account)
         {
-            Customers.Add(customer);
-            base.CreateNewCustomerFolder(customer.ID);
-            base.FileWriting(base.GetFilePath(customer.ID, 0), Join(customer));
+            customer.AddTo(Customers);
+            string path = customer.ID.NewCustomerPath();
+
+            Create.Folder($"Customers\\{customer.ID}");
+            Writing.FileWriting(path ,Connect(customer));
 
             AddNewAccount(account);
         }
 
-        public int CreateNewID()
+        /// <summary>
+        /// Добавление нового аккаунта
+        /// </summary>
+        /// <param name="account"></param>
+        public void AddNewAccount(Account account)
         {
-            return Customers.Count;
+            Accounts.Add(account);
+
+            string path = account.Type.NewAccountPath(account.ID);
+
+            Writing.FileWriting(path, Connect(account));
         }
 
+        /// <summary>
+        /// Удаление аккаунта
+        /// </summary>
+        /// <param name="account"></param>
+        public void DeleteAccount(Account account)
+        {
+            string path = account.Type.AccountPath(account.ID, customersFolderName);
+            Delete.File(path);
+
+            account.DeleteFrom(Accounts);
+        }
+
+        /// <summary>
+        /// Создание нового номера
+        /// </summary>
+        /// <returns></returns>
         public int CreateAccountNumber()
         {
             while (true)
@@ -141,6 +129,11 @@ namespace Task
             }
         }
 
+        /// <summary>
+        ///  Проверка уникальности номера
+        /// </summary>
+        /// <param name="accountNumber"></param>
+        /// <returns></returns>
         private bool UniqueAccountNumber(int accountNumber)
         {
             for (int i = 0; i < Accounts.Count; i++)
@@ -155,6 +148,13 @@ namespace Task
         #endregion
 
         #region Поиск
+
+        /// <summary>
+        /// Поиск аккаунта по индексу
+        /// </summary>
+        /// <param name="id"> Индекс </param>
+        /// <param name="accountType"> Тип аккаунта </param>
+        /// <returns></returns>
         public Account FindAccountByID(int id, bool accountType)
         {
             for (int i = 0; i < Accounts.Count; i++)
@@ -166,6 +166,12 @@ namespace Task
             }
             return null;
         }
+
+        /// <summary>
+        /// Поиск аккаунта по номеру
+        /// </summary>
+        /// <param name="number"> Номер </param>
+        /// <returns></returns>
         public Account FindAccountByNumber(int number)
         {
             for (int i = 0; i < Accounts.Count; i++)
@@ -178,149 +184,63 @@ namespace Task
         }
         #endregion
 
-        #region Преобразование переменных
-        /// <summary>
-        /// Разделение строки
-        /// </summary>
-        /// <param name="text"></param>
-        /// <returns></returns>
-        private string[] Separation(string text)
-        {
-            return text.Split('#');
-        }
-        private string Join(Customer customer)
-        {
-            string joint = customer.ID.ToString() + "#" +
-                           customer.LastName + "#" +
-                           customer.FirstName + "#" +
-                           customer.MiddleName;
-            return joint;
-        }
-        private string Join(Account account)
-        {
-            string joint = account.ID.ToString() + "#" +
-                           account.Number.ToString() + "#" +
-                           account.Balance.ToString() + "#" + 
-                           StringAccountType(account.Type);
-            return joint;
-        }
+        #region Соединение для записи
 
-        /// <summary>
-        /// Перевод string в int
-        /// </summary>
-        /// <param name="text"></param>
-        /// <returns></returns>
-        private int IntParse(string text)
+        private string Connect(Customer customer)
         {
-            return int.Parse(text);
-        }
+            string[] arr = customer.CustomerArray();
 
-        /// <summary>
-        /// Перевот string в long
-        /// </summary>
-        /// <param name="text"></param>
-        /// <returns></returns>
-        private long LongParse(string text)
-        {
-            return long.Parse(text);
+            return arr.Join();
         }
-
-        /// <summary>
-        /// Получение типа аккаунта
-        /// </summary>
-        /// <param name="text"></param>
-        /// <returns></returns>
-        private bool AccountType(string text)
+        private string Connect(Account account)
         {
-            if(text == "1")
-                return true;
-            else
-                return false;
-        }
+            string[] arr = account.AccountArray();
 
-        private int AccountFile(bool type)
-        {
-            if(type)
-            {
-                return 1;
-            }
-            else
-            {
-                return 2;
-            }
-        }
-
-        private int AccountActionFile(bool type)
-        {
-            if (type)
-            {
-                return 3;
-            }
-            else
-            {
-                return 4;
-            }
-        }
-
-        private string StringAccountType(bool type)
-        {
-            if(type)
-            {
-                return "1";
-            }
-            else
-            {
-                return "0";
-            }
+            return arr.Join();
         }
 
         #endregion
 
-        #region Расчёт процентов
+        #region Стартовая проверка списка клиентов и счетов
+
         /// <summary>
-        /// Начисление процентов за месяц
+        /// Заполнение списка клиентов
         /// </summary>
-        /// <param name="accountType"> Тип счёта </param>
-        /// <param name="balance"> Баланс </param>
-        /// <returns></returns>
-        public long MonthlyInterest(bool accountType, long balance)
+        private void FillCustomerList()
         {
-            long month = balance;
-
-            if (accountType)
+            for (int i = 0; i < customersFolderName.Count; i++)
             {
-                float percentages = (float)(balance * 1.12) / 12;
-                month += (long)percentages;
+                string path = i.CustomerPath(customersFolderName);
+                List<string> customerFile = Reader.GetList(path);
+                string[] customerInformation = customerFile[0].Separation();
+                Customer customer = new Customer(int.Parse(customerInformation[0]), customerInformation[1], customerInformation[2], customerInformation[3]);
+                Customers.Add(customer);
             }
-
-            return month;
         }
 
         /// <summary>
-        /// Начисление процентов за год
+        /// Заполнение списка счетов
         /// </summary>
-        /// <param name="accountType"> Тип счёта </param>
-        /// <param name="balance"> Баланс </param>
-        /// <returns></returns>
-        public long YearIntetest(bool accountType, long balance)
+        private void FillAccountList()
         {
-            long year = balance;
-
-            if (accountType)
+            for (int i = 0; i < customersFolderName.Count; i++)
             {
-                for (int i = 0; i < 12; i++)
+                string depositPath = true.AccountPath(i, customersFolderName);
+                List<string> DepositFile = Reader.GetList(depositPath);
+                if (DepositFile.Count > 0)
                 {
-                    float percentages = (float)(year * 1.12) / 12;
-                    year += (long)percentages;
+                    string[] accountInformation = DepositFile[0].Separation();
+                    Accounts.Add(new Account(accountInformation[0].IntParse(), accountInformation[1].IntParse(), accountInformation[2].LongParse(), accountInformation[3].BoolType()));
+                }
+
+                string notdepositPath = false.AccountPath(i, customersFolderName);
+                List<string> NotdepositFile = Reader.GetList(notdepositPath);
+                if (NotdepositFile.Count > 0)
+                {
+                    string[] accountInformation = NotdepositFile[0].Separation();
+                    Accounts.Add(new Account(accountInformation[0].IntParse(), accountInformation[1].IntParse(), accountInformation[2].LongParse(), accountInformation[3].BoolType()));
                 }
             }
-            else
-            {
-                float percentages = (float)(year * 0.12);
-                year += (long)percentages;
-            }
-
-            return year;
         }
 
         #endregion

@@ -22,7 +22,14 @@ namespace Task
     {
         public int Number;
 
+        /// <summary>
+        /// Собитие открытия страницы аккаунта
+        /// </summary>
         public static Action AccountPage;
+
+        /// <summary>
+        /// событие открытия страницы переводов
+        /// </summary>
         public static Action<int,int,long> Transfer;
 
         public TransferPage()
@@ -30,11 +37,21 @@ namespace Task
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Обработка нажатия кнопки открытия страницы аккаунта
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void AccountInfoPage(object sender, RoutedEventArgs e)
         {
             AccountPage?.Invoke();
         }
 
+        /// <summary>
+        /// Обработка нажатия кнопки открытия страницы переводов
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OpenTransfer(object sender, RoutedEventArgs e)
         {
             int recipient = int.Parse(AccountNumber.Text);

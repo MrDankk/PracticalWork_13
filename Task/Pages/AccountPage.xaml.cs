@@ -25,6 +25,9 @@ namespace Task
         public int accountNumber;
         bool accountType;
 
+        /// <summary>
+        /// Событие удаления аккаунта
+        /// </summary>
         public static event Action<int> DeleteAccount;
 
         public AccountPage(bool accountType, CustomerPage customerPage)
@@ -35,16 +38,29 @@ namespace Task
             TransferPage.AccountPage += BackToAccountPage;
         }
 
+        /// <summary>
+        /// Возвращение на страницу аккаунта
+        /// </summary>
         private void BackToAccountPage()
         {
             customerPage.OpenAccountPage(accountType);
         }
 
+        /// <summary>
+        /// Обработка кнопки удаления аккаунта
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DeleteAccountBtn(object sender, RoutedEventArgs e)
         {
             DeleteAccount?.Invoke(accountNumber);
         }
 
+        /// <summary>
+        /// Открытие страницы перевода
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OpenTransferPage(object sender, RoutedEventArgs e)
         {
             customerPage.OpenTransferPage(accountType, accountNumber);
