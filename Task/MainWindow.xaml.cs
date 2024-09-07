@@ -228,12 +228,12 @@ namespace Task
         {
             try
             {
-                if(customer == null) throw new CustomerException("Выберите клиента");
+                if(customer == null) throw new SelectException("Выберите клиента");
 
                 MainFrame.Content = customerPage;
                 customerPage.customerID = customer.ID;
             }
-            catch (CustomerException ex)
+            catch (SelectException ex)
             {
                 MessageBox.Show(ex.Message);
             }

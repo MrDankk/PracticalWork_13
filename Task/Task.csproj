@@ -60,7 +60,7 @@
     <Compile Include="Bank.cs" />
     <Compile Include="Extensions\BankExtension.cs" />
     <Compile Include="Customer.cs" />
-    <Compile Include="Exceptions\CustomerException.cs" />
+    <Compile Include="Exceptions\SelectException.cs" />
     <Compile Include="Pages\TransferPage.xaml.cs">
       <DependentUpon>TransferPage.xaml</DependentUpon>
     </Compile>

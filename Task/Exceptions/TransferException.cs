@@ -11,7 +11,6 @@ namespace Task
     {
         public TransferException(string msg)
             : base(msg)
-        {
-        }
+        {}
     }
 }

@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 
 namespace Task
 {
-    internal class CustomerException : Exception
+    internal class SelectException : Exception
     {
-        public CustomerException(string msg)
+        public SelectException(string msg)
             : base(msg)
-        {
-        }
-}
+        {}
+    }
 }
