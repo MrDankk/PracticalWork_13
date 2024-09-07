@@ -56,7 +56,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Account.cs" />
-    <Compile Include="AccountException.cs" />
+    <Compile Include="Exceptions\AccountException.cs" />
     <Compile Include="ActionNotifications.cs" />
     <Compile Include="Bank.cs" />
     <Compile Include="Extensions\BankExtension.cs" />
