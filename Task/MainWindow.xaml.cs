@@ -88,8 +88,10 @@ namespace Task
         {
             customerPage.CustomerName.Text = customer.Name;
 
-            if(deposit != null)
+            try
             {
+                if (deposit == null) throw new AccountException("Счёт не найден");
+
                 customerPage.DepositAccountFrame.Content = customerPage.depositAccountPage;
 
                 customerPage.depositAccountPage.accountNumber = deposit.Number;
@@ -101,13 +103,16 @@ namespace Task
 
                 customerPage.depositTransferPage.Balance.Text = deposit.Balance.ToString();
             }
-            else
+            catch(AccountException ex)
             {
+                Console.WriteLine(ex.Message);
                 customerPage.DepositAccountFrame.Content = customerPage.newDepositAccountPage;
             }
 
-            if(notDeposit != null)
+            try
             {
+                if (notDeposit == null) throw new AccountException("Счёт не найден");
+
                 customerPage.NotDepositAccountFrame.Content = customerPage.notDepositAccountPage;
 
                 customerPage.notDepositAccountPage.accountNumber = notDeposit.Number;
@@ -119,8 +124,9 @@ namespace Task
                 customerPage.notDepositTransferPage.Balance.Text = notDeposit.Balance.ToString();
 
             }
-            else
+            catch(AccountException ex)
             {
+                Console.WriteLine(ex.Message);
                 customerPage.NotDepositAccountFrame.Content = customerPage.newNotDepositAccountPage;
             }
         }
