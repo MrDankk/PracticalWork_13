@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -87,7 +88,7 @@ namespace Task
         {
             customerPage.CustomerName.Text = customer.Name;
 
-            try
+            if(deposit != null)
             {
                 customerPage.DepositAccountFrame.Content = customerPage.depositAccountPage;
 
@@ -100,12 +101,12 @@ namespace Task
 
                 customerPage.depositTransferPage.Balance.Text = deposit.Balance.ToString();
             }
-            catch(NullReferenceException)
+            else
             {
                 customerPage.DepositAccountFrame.Content = customerPage.newDepositAccountPage;
             }
 
-            try
+            if(notDeposit != null)
             {
                 customerPage.NotDepositAccountFrame.Content = customerPage.notDepositAccountPage;
 
@@ -118,7 +119,7 @@ namespace Task
                 customerPage.notDepositTransferPage.Balance.Text = notDeposit.Balance.ToString();
 
             }
-            catch
+            else
             {
                 customerPage.NotDepositAccountFrame.Content = customerPage.newNotDepositAccountPage;
             }
@@ -181,15 +182,17 @@ namespace Task
 
             if (bank.CheckBalance(sender,sum))
             {
-                if (recipientAccount != null)
+                try
                 {
-                    bank.OpenTranfer(senderAccount, recipientAccount, sum);
+                    if(recipientAccount == null || senderAccount == null) throw new TransferException("Не найден счёт");
 
+                    bank.OpenTranfer(senderAccount, recipientAccount, sum);
                     FillCustomerPage();
+                    TransferAction?.Invoke(senderAccount.Number.ToString(), recipientAccount.Number.ToString(), sum.ToString(), senderAccount.ID, recipientAccount.ID);
                 }
-                else
+                catch(TransferException ex)
                 {
-                    MessageBox.Show("Счёт не найден");
+                    MessageBox.Show(ex.Message);
                 }
             }
             else
@@ -197,7 +200,6 @@ namespace Task
                 MessageBox.Show("Недостаточно средств");
             }
 
-            TransferAction?.Invoke(senderAccount.Number.ToString(),recipientAccount.Number.ToString(),sum.ToString(), senderAccount.ID, recipientAccount.ID);
         }
         #endregion
 
@@ -224,10 +226,16 @@ namespace Task
         /// </summary>
         public void OpenCustomerPage()
         {
-            if(customer != null)
-            { 
+            try
+            {
+                if(customer == null) throw new CustomerException("Выберите клиента");
+
                 MainFrame.Content = customerPage;
                 customerPage.customerID = customer.ID;
+            }
+            catch (CustomerException ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
         #endregion

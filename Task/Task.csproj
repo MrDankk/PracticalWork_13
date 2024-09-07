@@ -58,12 +58,14 @@
     <Compile Include="Account.cs" />
     <Compile Include="ActionNotifications.cs" />
     <Compile Include="Bank.cs" />
-    <Compile Include="BankExtension.cs" />
+    <Compile Include="Extensions\BankExtension.cs" />
     <Compile Include="Customer.cs" />
+    <Compile Include="Exceptions\CustomerException.cs" />
     <Compile Include="Pages\TransferPage.xaml.cs">
       <DependentUpon>TransferPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="VariableExtension.cs" />
+    <Compile Include="Exceptions\TransferException.cs" />
+    <Compile Include="Extensions\VariableExtension.cs" />
     <Page Include="Pages\NewAccountPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -148,5 +150,6 @@
       <Name>RepositoryLibrary</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
