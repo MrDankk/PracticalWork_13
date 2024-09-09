@@ -88,6 +88,7 @@ namespace Task
             AddNewAccount(account);
 
             Create.CreateAllFile(customer.ID);
+            AddNewCustomerFolderNames(customer.ID);
         }
 
         /// <summary>
@@ -147,6 +148,22 @@ namespace Task
                 }
             }
             return true;
+        }
+
+        /// <summary>
+        /// Добавление путей к файлам нового клиента
+        /// </summary>
+        /// <param name="id"></param>
+        private void AddNewCustomerFolderNames(int id)
+        {
+            string[] customerFolder = new string[4];
+
+            customerFolder[0] = $"Customers\\{id}\\N_Account.txt";
+            customerFolder[1] = $"Customers\\{id}\\D_Account.txt";
+            customerFolder[2] = $"Customers\\{id}\\Customer.txt";
+            customerFolder[3] = $"Customers\\{id}\\Action.txt";
+
+            customerFolder.AddTo(customersFolderName);
         }
         #endregion
 
