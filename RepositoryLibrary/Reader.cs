@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace RepositoryLibrary
 {
-    public class Reader : Checks
+    public class Reader
     {
+
         /// <summary>
         /// Получить колекцию строк из докумета
         /// </summary>
@@ -16,8 +18,7 @@ namespace RepositoryLibrary
         /// <returns></returns>
         public static List<string> GetList(string path)
         {
-            FileChecking(path);
-
+            Create.File(path);
             List<string> fileItems = new List<string>();
 
             using (StreamReader streamReader = new StreamReader(path))
@@ -40,9 +41,10 @@ namespace RepositoryLibrary
         /// <returns></returns>
         public static string[] GetArray(string path)
         {
-            FileChecking(path);
+            var reader = new Reader();
+            Create.File(path);
 
-            string[] array = new string[Length(path)];
+            string[] array = new string[reader.Length(path)];
 
             using (StreamReader streamReader = new StreamReader(path))
             {
@@ -89,7 +91,7 @@ namespace RepositoryLibrary
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        private static int Length(string path)
+        private int Length(string path)
         {
             int lenght = 0;
 

@@ -22,6 +22,7 @@ namespace Task
         { 
             rand = new Random();
 
+            Create.Folder("Customers");
             customersFolderName = Reader.GetFoldersNames("Customers\\");
 
             Customers = new ObservableCollection<Customer>();
@@ -85,6 +86,8 @@ namespace Task
             Writing.FileWriting(path ,Connect(customer));
 
             AddNewAccount(account);
+
+            Create.CreateAllFile(customer.ID);
         }
 
         /// <summary>

@@ -41,9 +41,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Checks.cs" />
     <Compile Include="Create.cs" />
     <Compile Include="Delete.cs" />
+    <Compile Include="IChecking.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reader.cs" />
     <Compile Include="Writing.cs" />
